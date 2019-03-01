@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Base Application</string>
+
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="network_error">Internet connection problem</string>
+    <string name="tap_to_reload_link"><u>Tap to reload</u></string>
+    <string name="please_try_again">Please try again</string>
+    <string name="retry">Retry</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+</resources>
