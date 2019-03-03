@@ -1,12 +1,11 @@
 package application.me.baseapplication
 
-import android.content.Context
 import id.paprika.paprika.api.exception.ApiError
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-abstract class BaseCallback<T>(val context: Context) : Callback<T> {
+abstract class BaseCallback<T>() : Callback<T> {
 
     override fun onResponse(call: Call<T>, response: Response<T>) {
         if (response.isSuccessful) {
@@ -25,7 +24,7 @@ abstract class BaseCallback<T>(val context: Context) : Callback<T> {
             }
 
             if (error == null) {
-                error = ApiError(response.code(), context.getString(R.string.something_went_wrong))
+                error = ApiError(response.code(), "")
             }
 
             onFailure(call, error!!)

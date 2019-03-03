@@ -10,8 +10,8 @@ class ErrorHandler {
     companion object {
 
         fun getErrorMessage(context: Context, e: ApiError): String? {
-            e.message?.let {
-                return it
+            if (!e.message.isNullOrBlank()) {
+                return e.message
             }
 
             return context.getString(R.string.something_went_wrong)

@@ -6,20 +6,21 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
-import application.me.baseapplication.*
+import application.me.baseapplication.BaseActivity
+import application.me.baseapplication.R
 import application.me.baseapplication.api.model.Movie
-import application.me.baseapplication.api.service.MovieService
+import application.me.baseapplication.api.model.MovieDetailInteractor
 import application.me.baseapplication.helper.ErrorHandler
+import application.me.baseapplication.presenter.MovieDetailActivityPresenter
 import com.bumptech.glide.Glide
 import id.paprika.paprika.api.exception.ApiError
+import application.me.baseapplication.BaseApplication
 import kotlinx.android.synthetic.main.activity_movie_detail.*
-import retrofit2.Call
-import retrofit2.Response
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MovieDetailActivity : BaseActivity() {
+class MovieDetailActivity : BaseActivity(), MovieDetailActivityPresenter.View {
 
     companion object {
 
@@ -32,11 +33,13 @@ class MovieDetailActivity : BaseActivity() {
         }
     }
 
-    private var movie: Movie? = null
+    private lateinit var presenter: MovieDetailActivityPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movie_detail)
+
+        presenter = MovieDetailActivityPresenter(this, MovieDetailInteractor(BaseApplication.database?.movieDao()))
         toolbar.setNavigationOnClickListener {
             onBackPressed()
         }
@@ -44,44 +47,19 @@ class MovieDetailActivity : BaseActivity() {
         collapsingToolbar.setCollapsedTitleTextColor(Color.WHITE)
         collapsingToolbar.setExpandedTitleColor(Color.TRANSPARENT)
 
-        movie = intent.getParcelableExtra(INTENT_MOVIE)
+        val movie: Movie? = intent.getParcelableExtra(INTENT_MOVIE)
 
-        movie?.let { movie ->
-            setupView(movie)
-            fetchMovie(movie.id)
-        }
-    }
+        movie?.let {
+            setupView(it)
+            presenter.fetchMovie(it)
 
-    private fun fetchMovie(id: Int) {
-        if (movie?.getBackdropUrl().isNullOrEmpty()) {
-            loadingView.setLoading()
-            loadingView.setErrorClickListener(View.OnClickListener {
-                fetchMovie(id)
+            loadingView.setErrorClickListener(View.OnClickListener { _ ->
+                presenter.fetchMovie(it)
             })
-        } else {
-            loadingView.setSuccess()
         }
-        val service = BaseApi.getService(MovieService::class.java)
-        service.getMovie(id).enqueue(object : BaseCallback<Movie>(this) {
-            override fun onSuccess(call: Call<Movie>, response: Response<Movie>, t: Movie?) {
-                loadingView.setSuccess()
-                t?.let { movie ->
-                    this@MovieDetailActivity.movie = movie
-                    setupView(movie)
-                }
-            }
-
-            override fun onFailure(call: Call<Movie>, error: ApiError) {
-                loadingView.setError(ErrorHandler.getErrorMessage(this@MovieDetailActivity, error))
-            }
-
-            override fun onFailure(call: Call<Movie>, t: Throwable) {
-                loadingView.setError(ErrorHandler.getErrorMessage(this@MovieDetailActivity, t))
-            }
-        })
     }
 
-    private fun setupView(movie: Movie) {
+    override fun setupView(movie: Movie) {
         toolbar.title = movie.originalTitle
 
         Glide.with(this@MovieDetailActivity)
@@ -107,23 +85,31 @@ class MovieDetailActivity : BaseActivity() {
             movieOverviewContainer.visibility = View.VISIBLE
             movieOverview.text = movie.overview
         }
-        favouriteButtonState(movie)
+        setFavouriteButtonState(movie.isFavourite)
         movieFavourite.setOnClickListener {
-            toggleFavorite(movie)
+            presenter.toggleFavorite(movie)
         }
+
     }
 
-    private fun toggleFavorite(movie: Movie) {
-        if (movie.isFavourite()) {
-            BaseApplication.database?.movieDao()?.remove(movie.id)
-        } else {
-            BaseApplication.database?.movieDao()?.insert(movie)
-        }
-        favouriteButtonState(movie)
+    override fun showLoading() {
+        loadingView.setLoading()
     }
 
-    private fun favouriteButtonState(movie: Movie) {
-        if (movie.isFavourite()) {
+    override fun hideLoading() {
+        loadingView.setSuccess()
+    }
+
+    override fun showLoadingError(error: ApiError) {
+        loadingView.setError(ErrorHandler.getErrorMessage(this, error))
+    }
+
+    override fun showLoadingError(t: Throwable) {
+        loadingView.setError(ErrorHandler.getErrorMessage(this, t))
+    }
+
+    override fun setFavouriteButtonState(isFavourite: Boolean) {
+        if (isFavourite) {
             movieFavourite.setColorFilter(ContextCompat.getColor(this, R.color.favourite))
         } else {
             movieFavourite.setColorFilter(ContextCompat.getColor(this, R.color.not_favourite))

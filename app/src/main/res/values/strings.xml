@@ -22,4 +22,6 @@
         <item quantity="one">%d vote</item>
         <item quantity="other">%d votes</item>
     </plurals>
+
+    <string name="empty_favourite_list">You haven\'t add any movie to this list</string>
 </resources>

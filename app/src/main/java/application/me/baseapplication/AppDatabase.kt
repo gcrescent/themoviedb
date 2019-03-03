@@ -1,6 +1,8 @@
 package application.me.baseapplication
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import application.me.baseapplication.api.model.Genre
@@ -15,4 +17,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun genreDao(): GenreDao
 
     abstract fun movieDao(): MovieDao
+
 }

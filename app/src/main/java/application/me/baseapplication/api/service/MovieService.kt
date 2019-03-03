@@ -9,9 +9,9 @@ import retrofit2.http.Query
 
 interface MovieService {
 
-    @GET("movie/{sorting}")
+    @GET("movie/{type}")
     fun getMovieList(
-        @Path("sorting") sortBy: String,
+        @Path("type") movieType: String,
         @Query("page") page: Int
     ): Call<MovieList>
 

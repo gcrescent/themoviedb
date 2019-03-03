@@ -39,29 +39,19 @@ class Movie() : ObjectInterface, Parcelable {
     @Ignore
     var releaseDate: Date? = null
 
+    @Ignore
+    var genres: List<Genre>? = null
+
+    var genreNames: String? = null
+
+    var isFavourite: Boolean = false
+
     fun getPosterUrl(): String? {
         return if (posterPath != null) "https://image.tmdb.org/t/p/w500/$posterPath" else null
     }
 
     fun getBackdropUrl(): String? {
         return if (backdropPath != null) "https://image.tmdb.org/t/p/w500/$backdropPath" else null
-    }
-
-    fun getGenreNames(): String {
-        val genreNames = ArrayList<String>()
-        genreIds?.let { genreIds ->
-            val genreDao = BaseApplication.database?.genreDao()
-            for (genreId in genreIds) {
-                genreDao?.findNameById(genreId)?.let {
-                    genreNames.add(it)
-                }
-            }
-        }
-        return genreNames.joinToString()
-    }
-
-    fun isFavourite(): Boolean {
-        return BaseApplication.database?.movieDao()?.getCountById(id)?: 0 > 0
     }
 
     constructor(parcel: Parcel) : this() {
@@ -75,6 +65,8 @@ class Movie() : ObjectInterface, Parcelable {
         backdropPath = parcel.readString()
         val date = parcel.readLong()
         releaseDate = if (date == -1L) null else Date(date)
+        isFavourite = parcel.readInt() == 1
+        genreNames = parcel.readString()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -87,6 +79,8 @@ class Movie() : ObjectInterface, Parcelable {
         parcel.writeString(overview)
         parcel.writeString(backdropPath)
         parcel.writeLong(releaseDate?.time ?: -1L)
+        parcel.writeInt(if (isFavourite) 1 else 0)
+        parcel.writeString(genreNames)
     }
 
     override fun describeContents(): Int {
