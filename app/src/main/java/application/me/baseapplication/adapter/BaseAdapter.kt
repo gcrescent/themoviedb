@@ -21,10 +21,12 @@ import retrofit2.Call
 abstract class BaseRecyclerAdapter<T : ObjectInterface>(protected val context: Context) :
     RecyclerView.Adapter<BaseViewHolder>() {
 
-    protected val VIEW_TYPE_PROGRESS = 1
-    protected val VIEW_TYPE_EMPTY = 2
-    protected val VIEW_TYPE_ERROR = 3
-    protected val VIEW_TYPE_ITEM = 4
+    companion object {
+        const val VIEW_TYPE_PROGRESS = 1
+        const val VIEW_TYPE_EMPTY = 2
+        const val VIEW_TYPE_ERROR = 3
+        const val VIEW_TYPE_ITEM = 4
+    }
 
     private val objects: MutableList<T> = ArrayList()
     protected lateinit var recyclerView: RecyclerView
@@ -308,11 +310,11 @@ abstract class BaseRecyclerAdapter<T : ObjectInterface>(protected val context: C
                 }
 
                 for (queryLoadListener in queryLoadListeners) {
-                    queryLoadListener.onFailure(error, false)
+                    queryLoadListener.onFailure(error)
                 }
             }
 
-            override fun failed(t: Throwable?, isCanceled: Boolean) {
+            override fun failed(t: Throwable?) {
                 setLoading(false)
                 if (objects.isEmpty()) {
                     setError(true)
@@ -336,7 +338,7 @@ abstract class BaseRecyclerAdapter<T : ObjectInterface>(protected val context: C
                 }
 
                 for (queryLoadListener in queryLoadListeners) {
-                    queryLoadListener.onFailure(t, isCanceled)
+                    queryLoadListener.onFailure(t)
                 }
             }
 
@@ -423,7 +425,7 @@ abstract class BaseRecyclerAdapter<T : ObjectInterface>(protected val context: C
 
         fun failed(error: ApiError)
 
-        fun failed(t: Throwable?, isCanceled: Boolean)
+        fun failed(t: Throwable?)
     }
 
     interface OnQueryLoadListener<T : ObjectInterface> {
@@ -431,7 +433,7 @@ abstract class BaseRecyclerAdapter<T : ObjectInterface>(protected val context: C
 
         fun onSuccess(objects: List<T>?)
 
-        fun onFailure(t: Throwable?, isCanceled: Boolean)
+        fun onFailure(t: Throwable?)
     }
 
     class ProgressViewHolder(view: View) : BaseViewHolder(view)

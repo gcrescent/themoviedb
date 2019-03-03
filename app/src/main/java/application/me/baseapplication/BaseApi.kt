@@ -13,7 +13,7 @@ class BaseApi {
 
     companion object {
 
-        private lateinit var instance: BaseApi
+        lateinit var instance: BaseApi
 
         fun initiate() {
             instance = BaseApi()
@@ -28,7 +28,7 @@ class BaseApi {
         }
     }
 
-    private lateinit var retrofit: Retrofit
+    var retrofit: Retrofit
     private val services: HashMap<String, Any> = HashMap()
 
     init {
@@ -41,7 +41,13 @@ class BaseApi {
             val request = chain.request()
             val requestBuilder = request.newBuilder()
 
-            //add header here
+            //add header & query here
+
+            val urlBuilder = request.url()
+                .newBuilder()
+                .addQueryParameter("api_key", "76ef7a63264b9ebde62535e647d71997")
+
+            requestBuilder.url(urlBuilder.build())
 
             chain.proceed(requestBuilder.build())
         }
@@ -60,7 +66,7 @@ class BaseApi {
 
         val client = builder.build()
 
-        val url = "" //add api url
+        val url = "https://api.themoviedb.org/3/" //api url
 
         retrofit = Retrofit.Builder()
             .baseUrl(url)
